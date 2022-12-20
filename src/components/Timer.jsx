@@ -4,52 +4,58 @@ import { FaRegSmileWink } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 export const Timer = ({ time, relaxTime }) => {
-    const [timeFormated, setTimeFormated] = useState("00:00");
-    let [focusTime, setFocusTime] = useState(0);
+    const [minutes, setMinutes] = useState(time);
+    const [focusTime, setFocusTime] = useState(0);
+    const [timeFormated, setTimeFormated] = useState(`${minutes}:00`);
+    const [isRunning, setIsRunning] = useState(false);
 
-    let seconds = 1;
-    let minutes = 0;
+    const [seconds, setSeconds] = useState(59);
 
-    function startTimer({ start = 1 }) {
-        console.log("Clicado");
-
-        if (start == 1) {
-            setInterval(() => {
-                if (minutes <= time - 1 && seconds <= 59) {
-                    timerFormated();
-                    seconds++;
-                    console.log(minutes);
-
-                    if (seconds % 60 == 0) {
-                        minutes++;
-                        seconds = 0;
-                    }
-
-                    if (minutes == time) {
-                        setTimeout(() => {
-                            setTimeFormated(`${time}:00`);
-                            setFocusTime(focusTime + time);
-                        }, 1000);
-                    }
-                }
-            }, 1000);
-
-            function timerFormated() {
-                if (seconds <= 9 && minutes <= 9) {
-                    setTimeFormated(`0${minutes}:0${seconds}`);
-                } else if (seconds >= 10 && minutes <= 9) {
-                    setTimeFormated(`0${minutes}:${seconds}`);
-                } else if (minutes >= 10 && seconds >= 10) {
-                    setTimeFormated(`${minutes}:${seconds}`);
-                } else {
-                    setTimeFormated(`${minutes}:0${seconds}`);
-                }
-            }
-        }
+    function handleStartTimer() {
+        setIsRunning(true);
     }
 
-    function stopTimer() {
-        startTimer(0);
+    function handleStopTimer() {
+        setIsRunning(false);
+    }
+
+    function handleRestartTimer() {
+        setIsRunning(false);
+        setMinutes(time);
+        setTimeFormated(`${time}:00`);
+        setSeconds(59);
+    }
+
+    useEffect(() => {
+        console.log("Clicado");
+        let interval = null;
+
+        if (!isRunning) return clearInterval(interval);
+
+        interval = setInterval(() => {
+            setSeconds((prevSec) => prevSec - 1);
+            formatTimer();
+
+            if (minutes <= 0) {
+                setTimeFormated("00:00");
+                setFocusTime(focusTime + time);
+            }
+
+            if (seconds <= 0) {
+                setSeconds(59);
+                setMinutes((prevTime) => prevTime - 1);
+            }
+
+            if (minutes == time) setMinutes((prevMinutes) => prevMinutes - 1);
+        }, 100);
+        return () => clearInterval(interval);
+    }, [isRunning, minutes, seconds]);
+
+    function formatTimer() {
+        const minutesFormated = `${minutes < 10 ? `0${minutes}` : minutes}`;
+        const secondsFormated = `${seconds < 10 ? `0${seconds}` : seconds}`;
+
+        setTimeFormated(`${minutesFormated}:${secondsFormated}`);
     }
 
     return (
@@ -68,59 +74,34 @@ export const Timer = ({ time, relaxTime }) => {
                     <span className="font-thin">{timeFormated}</span>
                 </h1>
 
-                {timeFormated === `${time}:00` && (
+                {minutes != time && (
                     <button
                         className="bg-yellow-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-yellow-300 transition-all duration-300 active:bg-yellow-600 active:text-white w-40"
-                        onClick={startTimer}
+                        onClick={handleRestartTimer}
                     >
                         Restart Timer
                     </button>
                 )}
 
-                {timeFormated === "00:00" && (
+                {minutes == time && (
                     <button
                         className="bg-green-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-green-300 transition-all duration-300 active:bg-green-600 active:text-white w-40"
-                        onClick={startTimer}
+                        onClick={handleStartTimer}
                     >
                         Start Timer
                     </button>
                 )}
 
-                {timeFormated != `${time}:00` && timeFormated != "00:00" && (
+                {minutes != 0 && minutes != time && (
                     <button
                         className="bg-red-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-red-300 transition-all duration-300 active:bg-red-600 active:text-white w-40"
-                        onClick={stopTimer}
+                        onClick={handleStopTimer}
                     >
                         Stop Timer
                     </button>
                 )}
 
-                {/* {timeFormated === `${time}:00` ? (
-                    <button
-                        className="bg-slate-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-slate-300 transition-all duration-300 active:bg-slate-600 active:text-white"
-                        onClick={startTimer}
-                    >
-                        Restart Timer
-                    </button>
-                ) : (
-                    <button
-                        className="bg-slate-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-slate-300 transition-all duration-300 active:bg-slate-600 active:text-white"
-                        onClick={startTimer}
-                    >
-                        Start Timer
-                    </button>
-                )} */}
-
-                {/* {timeFormated != `${time}:00` && seconds > 1 && (
-                    <button
-                        className="bg-slate-200 p-5 rounded-xl font-normal uppercase mt-5 hover:scale-105 hover:shadow-lg hover:shadow-gray-300 hover:bg-slate-300 transition-all duration-300 active:bg-slate-600 active:text-white"
-                        onClick={stopTimer}
-                    >
-                        Stop Timer
-                    </button>
-                )} */}
-
-                {timeFormated === `${time}:00` && (
+                {setMinutes === `${time}:00` && (
                     <p className="flex items-center justify-center gap-2 mt-3 text-lg">
                         Timeout! Let's relax. <FaRegSmileWink />
                     </p>
