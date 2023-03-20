@@ -8,6 +8,7 @@ import { Type2 } from "./pages/Type2";
 
 import "../index.css";
 import { CustomType } from "./pages/CustomType";
+import { RelaxTimer } from "./components/RelaxTimer";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
@@ -17,7 +18,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                     <Route path="/" element={<Home />} />
                     <Route path="/type1" element={<Type1 />} />
                     <Route path="/type2" element={<Type2 />} />
-                    <Route path="/type/custom/:id" element={<CustomType />} />
+                    <Route
+                        path="/type/custom/:index"
+                        element={<CustomType />}
+                    />
+                    {/* <Route path="/relaxTime" element={<RelaxTimer />} /> */}
                 </Route>
             </Routes>
         </BrowserRouter>

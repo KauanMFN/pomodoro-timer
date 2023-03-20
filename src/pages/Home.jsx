@@ -4,33 +4,48 @@ import { MdTimer } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { AddCustomTimer } from "../components/AddCustomTimer";
 import { CustomTimerEditor } from "../components/CustomTimerEditor";
-import { Timer } from "../components/Timer";
-import { CustomType } from "./CustomType";
+import { CustomTypeComponent } from "../components/CustomTypeComponent";
 
 export const Home = () => {
-    const [timerEditor, setTimerEditor] = useState(0);
-    const [focusTime, setFocusTime] = useState();
-    const [relaxTime, setRelaxTime] = useState();
+    const [timerEditor, setTimerEditor] = useState(false);
+    const [focusTime, setFocusTime] = useState([]);
+    const [relaxTime, setRelaxTime] = useState([]);
+
+    // const [customTimerInfo, setCustomTimerInfo] = useState([]);
     const [customTimer, setCustomTimer] = useState([]);
 
     const openCustomTimerEditor = () => {
-        if (timerEditor == 0) setTimerEditor(timerEditor + 1);
-        else setTimerEditor(0);
+        // setCustomTimer([]);
 
-        console.log("Clicado", timerEditor);
+        if (!timerEditor) {
+            setTimerEditor(true);
+        } else {
+            setTimerEditor(false);
+        }
+
+        // console.log("Clicado", timerEditor);
     };
 
     const handleAddCustomTimer = (e) => {
         e.preventDefault();
-        setCustomTimer(...customTimer, { focusTime, relaxTime });
+
+        setCustomTimer([...customTimer, { focusTime, relaxTime }]);
+        localStorage.setItem("focusTime", focusTime);
+        localStorage.setItem("relaxTime", relaxTime);
 
         openCustomTimerEditor();
-        console.log("Clicado", focusTime, relaxTime, customTimer);
+        console.log("Clicado", customTimer);
     };
 
     useEffect(() => {
-        console.log(customTimer);
-    }, [customTimer]);
+        const localStorageRelaxTime = localStorage.getItem("relaxTime");
+        const localStorageFocusTime = localStorage.getItem("focusTime");
+
+        setCustomTimer([
+            ...customTimer,
+            { localStorageFocusTime, localStorageRelaxTime },
+        ]);
+    }, []);
 
     return (
         <div>
@@ -65,31 +80,15 @@ export const Home = () => {
                     Custom Timers
                 </h3>
 
-                <div className="flex gap-5 transition-all">
+                <div className="flex gap-5 transition-all flex-wrap justify-center">
                     {customTimer &&
                         customTimer.map((timer, index) => (
-                            <Link to={`/type/custom/${index}`}>
-                                <button className="bg-slate-200 px-10 py-5 rounded-xl font-thin hover:shadow-md hover:shadow-gray-300 hover:scale-105 transition-all duration-300">
-                                    <div>
-                                        <h3 className="text-xl font-normal mb-3">
-                                            Custom Type {index}
-                                        </h3>
-                                        <p className="">
-                                            {timer.focusTime} min in focus
-                                        </p>
-                                        <p className="">
-                                            {timer.relaxTime} min in pause
-                                        </p>
-                                    </div>
-                                </button>
-
-                                <CustomType
-                                    time={timer.focusTime}
-                                    relaxTime={timer.relaxTime}
-                                    key={index}
-                                    className="hidden"
-                                />
-                            </Link>
+                            <CustomTypeComponent
+                                focusTime={timer.focusTime}
+                                relaxTime={timer.relaxTime}
+                                key={index}
+                                index={index + 1}
+                            />
                         ))}
 
                     {timerEditor == 1 ? (
@@ -117,13 +116,15 @@ export const Home = () => {
                                         </span>
                                     </p>
                                     <input
-                                        type="text"
+                                        type="number"
                                         className=" rounded-lg px-2 py-1 text-center w-12 text-xl outline-none border-2 border-slate-300 hover:scale-[103%] transition"
                                         onChange={(e) =>
-                                            setFocusTime(e.target.value)
+                                            setFocusTime([e.target.value])
                                         }
+                                        required
                                     />
                                 </div>
+
                                 <div className="flex gap-2">
                                     <p className="flex flex-col text-sm">
                                         Time to{" "}
@@ -132,11 +133,12 @@ export const Home = () => {
                                         </span>
                                     </p>
                                     <input
-                                        type="text"
+                                        type="number"
                                         className=" rounded-lg px-2 py-1 text-center w-12 text-xl outline-none border-2 border-slate-300 hover:scale-[103%] transition"
                                         onChange={(e) =>
-                                            setRelaxTime(e.target.value)
+                                            setRelaxTime([e.target.value])
                                         }
+                                        required
                                     />
                                 </div>
 
